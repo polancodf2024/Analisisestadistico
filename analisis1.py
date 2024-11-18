@@ -140,5 +140,5 @@ if st.button("Enviar archivo" if idioma == "Español" else "Submit file"):
             # Enviar notificación al administrador
             send_to_admin(file_data, file_name, nombre_completo, email, numero_economico, servicios_solicitados)
 
-            st.success("Envío exitoso." if idioma == "Español" else "Submission successful.")
+            st.success("Envío exitoso. Cierre la aplicación." if idioma == "Español" else "Submission successful. Close the application.")
 
