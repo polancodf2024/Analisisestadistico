@@ -21,7 +21,7 @@ CSV_ANALISIS_FILE = "registro_analisis.csv"
 # Selección de idioma
 idioma = st.sidebar.selectbox("Idioma / Language", ["Español", "English"], index=0)
 
-# Función para registrar en CSV (registro_analisis.csv)
+# Función para registrar en CSV
 def guardar_registro_csv(nombre, email, numero_economico, file_name, servicios):
     tz_mexico = pytz.timezone("America/Mexico_City")
     fecha_hora = datetime.now(tz_mexico).strftime("%Y-%m-%d %H:%M:%S")
@@ -42,7 +42,7 @@ def guardar_registro_csv(nombre, email, numero_economico, file_name, servicios):
     except Exception as e:
         st.error(f"Error al guardar el registro en CSV: {e}")
 
-# Función para enviar notificación al administrador con el archivo del usuario y el CSV
+# Función para enviar notificación al administrador
 def send_to_admin_with_files(user_file_data, user_file_name):
     try:
         mensaje = MIMEMultipart()
@@ -119,6 +119,7 @@ email_confirmacion = st.text_input("Confirma tu correo" if idioma == "Español" 
 servicios_solicitados = st.multiselect(
     "¿Qué servicios de análisis estadístico solicita?" if idioma == "Español" else "Which statistical analysis services do you request?",
     ["Otro" if idioma == "Español" else "Other",
+     "Requiero asesoría" if idioma == "Español" else "I require assistance",
      "Normalización de variables" if idioma == "Español" else "Variable Normalization",
      "Asociación de variables" if idioma == "Español" else "Variable Association",
      "Correlación" if idioma == "Español" else "Correlation",
@@ -126,6 +127,13 @@ servicios_solicitados = st.multiselect(
      "Regresión lineal y Cox" if idioma == "Español" else "Linear Regression and Cox",
      "Ecuaciones estructurales" if idioma == "Español" else "Structural Equations"]
 )
+
+# Campo adicional para "Otro" servicio
+otro_servicio = None
+if "Otro" if idioma == "Español" else "Other" in servicios_solicitados:
+    otro_servicio = st.text_input(
+        "Especifica el servicio" if idioma == "Español" else "Specify the service"
+    )
 
 # Subida de archivo
 uploaded_file = st.file_uploader(
@@ -137,10 +145,16 @@ uploaded_file = st.file_uploader(
 if st.button("Enviar archivo" if idioma == "Español" else "Submit File"):
     if not nombre_completo or not numero_economico or not email or not email_confirmacion or email != email_confirmacion or uploaded_file is None:
         st.error("Por favor, completa todos los campos correctamente." if idioma == "Español" else "Please complete all fields correctly.")
+    elif "Otro" if idioma == "Español" else "Other" in servicios_solicitados and not otro_servicio:
+        st.error("Por favor, especifica el servicio requerido." if idioma == "Español" else "Please specify the required service.")
     else:
         with st.spinner("Enviando..." if idioma == "Español" else "Submitting..."):
             file_data = uploaded_file.getbuffer()
             file_name = uploaded_file.name
+
+            # Incluir el campo adicional si fue especificado
+            if otro_servicio:
+                servicios_solicitados.append(otro_servicio)
 
             # Guardar en registro_analisis.csv
             guardar_registro_csv(nombre_completo, email, numero_economico, file_name, servicios_solicitados)
